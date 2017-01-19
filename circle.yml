@@ -1,0 +1,43 @@
+machine:
+  node:
+    version: 6.1
+  environment:
+    # Save mocha test results
+    MOCHA_FILE: "$CIRCLE_TEST_REPORTS/mocha.xml"
+
+dependencies:
+  post:
+    # For some reason this plugin is not automatically installed inside the CircleCI container
+    - npm install eslint-plugin-import@latest
+
+    # Needed for proper mocha test results
+    - npm install mocha-circleci-reporter
+    - npm install codecov
+
+    # TODO: Uncomment once open source
+    # - npm install esdoc-uploader
+
+test:
+  override:
+    # Lint files
+    - node_modules/.bin/eslint -f junit src > $CIRCLE_TEST_REPORTS/eslint.xml
+
+    # Run mocha tests
+    - NODE_ENV=test node_modules/.bin/nyc npm test -- --reporter mocha-circleci-reporter
+    # Check coverage
+    - node_modules/.bin/nyc check-coverage --statements 90 --branches 90 --functions 90 --lines 90
+    # Report coverage
+    - node_modules/.bin/nyc report --reporter=lcov | node_modules/.bin/codecov
+
+    # Create API docs and validate coverage
+    - npm run docs
+  post:
+    # Save API docs
+    - cp -R docs/api $CIRCLE_ARTIFACTS
+
+deployment:
+  staging:
+    branch: master
+    commands:
+      # TODO: Uncomment once open source
+      # - node_modules/.bin/esdoc-uploader
