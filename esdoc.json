@@ -1,0 +1,18 @@
+module.exports = {
+  "title": "atscm-cli",
+  "source": "./src",
+  "destination": "./docs/api",
+  "access": ["public", "package", "private"],
+  "test": {
+    "type": "mocha",
+    "source": "./test"
+  },
+  "manual": {
+    "changelog": ["./CHANGELOG.md"]
+  },
+  "plugins": [
+    {
+      "name": "esdoc-plugin-require-coverage"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-const BrokenLinksChecker = require('./index');
+import BrokenLinkChecker from './BrokenLinkChecker';
 
-(new BrokenLinksChecker(process.argv)).launch();
+(new BrokenLinkChecker(process.argv.slice(2))).launch();

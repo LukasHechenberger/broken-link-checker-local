@@ -1,6 +1,23 @@
-const blcDefaults = require('broken-link-checker/lib/internal/defaultOptions');
+import blcDefaults from 'broken-link-checker/lib/internal/defaultOptions';
 
-module.exports = {
+/**
+ * Command line options available
+ * @taype {{exclude: {desc: string, default: Array}, exclude-external: {desc: string, alias: string, type: string, default: boolean}, exclude-internal: {desc: string, alias: string, type: string, default: boolean}, filter-level: {desc: string, type: string, default: number}, follow: {desc: string, alias: string, type: string, default: boolean}, get: {desc: string, alias: string, type: string, default: boolean}, ordered: {desc: string, alias: string, type: string, default: boolean}, recursive: {desc: string, alias: string, type: string, default: boolean}, user-agent: {desc: string, type: string, default: *}, verbose: {desc: string, alias: string, type: string, default: boolean}}}
+ * @type {Object}
+ * @property {yargs.Option<String[]>} [exclude=[]] A keyword/glob to match links against. Can be
+ * used multiple times.
+ * @property {yargs.Option<Boolean>} [exclude-external=false] Will not check external links.
+ * @property {yargs.Option<Boolean>} [exclude-internal=false] Will not check internal links.
+ * @property {yargs.Option<Number>} [filter-level=1] The types of tags and attributes that are
+ * considered links.
+ * @property {yargs.Option<Boolean>} [follow=false] Force-follow robot exclusions.
+ * @property {yargs.Option<Boolean>} [get=false] Change request method to GET.
+ * @property {yargs.Option<Boolean>} [recursive=false] Recursively scan "crawl" the HTML
+ * document(s).
+ * @property {yargs.Option<String>} [user-agent] The user agent to use for link checks.
+ * @property {yargs.Option<Boolean>} [verbose=false] Display excluded links.
+ */
+const CliOptions = {
   exclude: {
     desc: 'A keyword/glob to match links against. Can be used multiple times.',
     default: blcDefaults.excludedKeywords,
@@ -38,9 +55,6 @@ module.exports = {
     type: 'boolean',
     default: false,
   },
-  input: {
-    desc: 'Missing',
-  },
   ordered: {
     desc: 'Maintain the order of links as they appear in their HTML document.',
     alias: 'o',
@@ -65,3 +79,9 @@ module.exports = {
     default: false,
   },
 };
+
+export default CliOptions;
+
+/**
+ * @external {yargs.Option} http://yargs.js.org/docs/#methods-optionskey-opt
+ */

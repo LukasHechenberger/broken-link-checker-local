@@ -2,16 +2,22 @@
   "name": "broken-link-checker-local",
   "version": "0.1.0",
   "description": "Find broken links, missing images, etc in your HTML, even in local files",
-  "main": "src/index.js",
+  "main": "out/index.js",
   "bin": {
-    "blcl": "src/bin.js"
+    "blcl": "out/bin.js"
   },
   "engines": {
     "node": ">=6.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint ./"
+    "compile": "babel src --out-dir out",
+    "compile:watch": "npm run compile -- --watch",
+    "docs": "esdoc",
+    "lint": "eslint src",
+    "prepublish": "npm run compile && npm run docs",
+    "test": "node_modules/.bin/mocha --recursive --require babel-register \"./test/**/*.spec.js\"",
+    "test:watch": "npm test -- --watch --reporter min",
+    "test:coverage": "NODE_ENV=test node_modules/.bin/nyc --reporter=html npm test"
   },
   "repository": {
     "type": "git",
@@ -31,13 +37,46 @@
     "yargs": "^6.6.0"
   },
   "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-istanbul": "^3.1.2",
+    "babel-preset-node6": "^11.0.0",
+    "esdoc": "^0.5.2",
+    "esdoc-plugin-require-coverage": "^0.1.2",
     "eslint": "^3.13.1",
-    "eslint-config-lsage": "^0.1.0"
+    "eslint-config-lsage": "^0.1.0",
+    "mocha": "^3.2.0",
+    "nyc": "^10.1.2",
+    "sinon": "^1.17.7",
+    "unexpected": "^10.22.1"
   },
   "eslintConfig": {
     "extends": "lsage",
     "env": {
       "node": true
     }
+  },
+  "babel": {
+    "presets": [
+      "node6"
+    ],
+    "env": {
+      "test": {
+        "plugins": [
+          "istanbul"
+        ]
+      }
+    }
+  },
+  "nyc": {
+    "all": true,
+    "include": [
+      "src/**/*.js"
+    ],
+    "require": [
+      "babel-register"
+    ],
+    "sourceMap": false,
+    "instrument": false,
+    "check-coverage": true
   }
 }
