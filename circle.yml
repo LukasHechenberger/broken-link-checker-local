@@ -35,9 +35,9 @@ test:
     # Save API docs
     - cp -R docs/api $CIRCLE_ARTIFACTS
 
-deployment:
-  staging:
-    branch: master
-    commands:
-      # TODO: Uncomment once open source
-      # - node_modules/.bin/esdoc-uploader
+# TODO: Uncomment once open source
+# deployment:
+#   staging:
+#     branch: master
+#     commands:
+#       - node_modules/.bin/esdoc-uploader
