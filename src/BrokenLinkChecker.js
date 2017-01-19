@@ -1,7 +1,6 @@
 import { spawn } from 'child_process';
 import { join } from 'path';
 import { parse } from 'url';
-import { createServer } from 'http';
 import yargs from 'yargs';
 import express from 'express';
 import getPort from 'get-port';
