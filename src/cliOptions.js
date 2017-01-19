@@ -2,7 +2,6 @@ import blcDefaults from 'broken-link-checker/lib/internal/defaultOptions';
 
 /**
  * Command line options available
- * @taype {{exclude: {desc: string, default: Array}, exclude-external: {desc: string, alias: string, type: string, default: boolean}, exclude-internal: {desc: string, alias: string, type: string, default: boolean}, filter-level: {desc: string, type: string, default: number}, follow: {desc: string, alias: string, type: string, default: boolean}, get: {desc: string, alias: string, type: string, default: boolean}, ordered: {desc: string, alias: string, type: string, default: boolean}, recursive: {desc: string, alias: string, type: string, default: boolean}, user-agent: {desc: string, type: string, default: *}, verbose: {desc: string, alias: string, type: string, default: boolean}}}
  * @type {Object}
  * @property {yargs.Option<String[]>} [exclude=[]] A keyword/glob to match links against. Can be
  * used multiple times.
