@@ -1,0 +1,43 @@
+{
+  "name": "broken-link-checker-local",
+  "version": "0.1.0",
+  "description": "Find broken links, missing images, etc in your HTML, even in local files",
+  "main": "src/index.js",
+  "bin": {
+    "blcl": "src/bin.js"
+  },
+  "engines": {
+    "node": ">=6.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LukasHechenberger/broken-link-checker-local.git"
+  },
+  "author": "Lukas Hechenberger <admin@ls-age.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LukasHechenberger/broken-link-checker-local/issues"
+  },
+  "homepage": "https://github.com/LukasHechenberger/broken-link-checker-local#readme",
+  "dependencies": {
+    "broken-link-checker": "^0.7.4",
+    "chalk": "^1.1.3",
+    "express": "^4.14.0",
+    "get-port": "^2.1.0",
+    "yargs": "^6.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.13.1",
+    "eslint-config-lsage": "^0.1.0"
+  },
+  "eslintConfig": {
+    "extends": "lsage",
+    "env": {
+      "node": true
+    }
+  }
+}
