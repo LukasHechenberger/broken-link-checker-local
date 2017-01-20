@@ -19,3 +19,14 @@ to install this module globally.
 
 ## Usage
 
+> All commands of [broken-link-checker](https://github.com/stevenvachon/broken-link-checker) can be used in exactly the same way with this module. The only difference is that **broken-link-checker-local is available as `blcl`**.
+
+In addition to running checks on URLs by running
+
+```blcl http://yoursite.com -ro```
+
+you can also check local directories by providing a path instead of a URL:
+
+```blcl ./path/to/directory -ro```
+
+You can run `blcl --help` to check for available options.
