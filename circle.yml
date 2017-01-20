@@ -15,8 +15,11 @@ dependencies:
     - npm install mocha-circleci-reporter
     - npm install codecov
 
-    # TODO: Uncomment once open source
-    # - npm install esdoc-uploader
+    # Needed to upload documentation
+    - npm install esdoc-uploader
+
+    # Needed to publish to npm
+    - npm install publish
 
 test:
   override:
@@ -36,9 +39,10 @@ test:
     # Save API docs
     - cp -R docs/api $CIRCLE_ARTIFACTS
 
-# TODO: Uncomment once open source
-# deployment:
-#   staging:
-#     branch: master
-#     commands:
-#       - node_modules/.bin/esdoc-uploader
+deployment:
+  staging:
+    branch: master
+    commands:
+      - node_modules/.bin/esdoc-uploader
+      - echo -e "$NPM_USERNAME\n$NPM_PASSWORD\n$NPM_EMAIL" | npm login
+      - node_modules/.bin/publish
