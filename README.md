@@ -4,6 +4,7 @@
 
 [![CircleCI](https://circleci.com/gh/LukasHechenberger/broken-link-checker-local.svg?style=shield&circle-token=5f7572151da460505166029bdfeefbc32d6bc720)](https://circleci.com/gh/LukasHechenberger/broken-link-checker-local)
 [![codecov](https://codecov.io/gh/LukasHechenberger/broken-link-checker-local/branch/master/graph/badge.svg?token=dPgjdXipFF)](https://codecov.io/gh/LukasHechenberger/broken-link-checker-local)
+[![ESDoc](https://doc.esdoc.org/github.com/LukasHechenberger/broken-link-checker-local/badge.svg)](https://doc.esdoc.org/github.com/LukasHechenberger/broken-link-checker-local/)
 
 Just a tiny wrapper around [broken-link-checker](https://github.com/stevenvachon/broken-link-checker) by [stevenvachon](https://github.com/stevenvachon) that allows you to check **local direcories** for broken links.
 
