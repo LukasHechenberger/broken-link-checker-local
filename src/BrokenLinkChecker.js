@@ -101,7 +101,7 @@ export default class BrokenLinkChecker {
         // Add options passed to blc
         args = args.concat(this._argv);
 
-        const blc = spawn(join(__dirname, '../node_modules/.bin/blc'), args, {
+        const blc = spawn(require.resolve('broken-link-checker/bin/blc'), args, {
           stdio: 'inherit',
         });
 
