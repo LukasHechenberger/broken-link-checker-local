@@ -1,5 +1,5 @@
-module.exports = {
-  "title": "atscm-cli",
+{
+  "title": "broken-link-checker-local",
   "source": "./src",
   "destination": "./docs/api",
   "access": ["public", "package", "private"],

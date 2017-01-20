@@ -12,7 +12,7 @@
   "scripts": {
     "compile": "babel src --out-dir out",
     "compile:watch": "npm run compile -- --watch",
-    "docs": "esdoc",
+    "docs": "esdoc -c esdoc.json",
     "lint": "eslint src",
     "prepublish": "npm run compile && npm run docs",
     "test": "node_modules/.bin/mocha --recursive --require babel-register \"./test/**/*.spec.js\"",
