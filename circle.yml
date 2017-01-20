@@ -4,6 +4,7 @@ machine:
   environment:
     # Save mocha test results
     MOCHA_FILE: "$CIRCLE_TEST_REPORTS/mocha.xml"
+    CODECOV_TOKEN: "41286a76-6eb6-40f5-bf7a-62dd2d55e6f9"
 
 dependencies:
   post:
