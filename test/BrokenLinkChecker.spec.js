@@ -1,6 +1,5 @@
 import expect from 'unexpected';
-import { spy, stub } from 'sinon';
-
+import { spy } from 'sinon';
 import { createServer, Server } from 'http';
 import { join } from 'path';
 import getPort from 'get-port';
@@ -32,7 +31,7 @@ describe('BrokenLinkChecker', function() {
           expect(checker.server, 'to be a', Server);
         });
     });
-    
+
     it('should fail without path', function() {
       checker.path = false;
       return expect(checker.startServer(9000), 'to be rejected with', 'No path given');
