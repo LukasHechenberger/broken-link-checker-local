@@ -18,7 +18,8 @@
     "prepublish": "npm run compile && npm run docs",
     "test": "node_modules/.bin/mocha --recursive --require babel-register \"./test/**/*.spec.js\"",
     "test:watch": "npm test -- --watch --reporter min",
-    "test:coverage": "NODE_ENV=test node_modules/.bin/nyc --reporter=html npm test"
+    "test:coverage": "NODE_ENV=test node_modules/.bin/nyc --reporter=html npm test",
+    "test:docs": "node out/bin.js docs/api --exclude https://circleci.com/gh/LukasHechenberger/broken-link-checker-local"
   },
   "repository": {
     "type": "git",
