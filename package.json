@@ -42,10 +42,12 @@
     "babel-cli": "^6.18.0",
     "babel-plugin-istanbul": "^3.1.2",
     "babel-preset-node6": "^11.0.0",
+    "codecov": "^3.0.0",
     "esdoc": "^0.5.2",
     "eslint": "^3.13.1",
     "eslint-config-lsage": "^0.1.0",
     "mocha": "^3.2.0",
+    "mocha-circleci-reporter": "0.0.2",
     "nyc": "^10.1.2",
     "sinon": "^1.17.7",
     "unexpected": "^10.22.1"
