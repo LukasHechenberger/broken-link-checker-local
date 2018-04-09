@@ -2,7 +2,7 @@
   "name": "broken-link-checker-local",
   "version": "0.1.1",
   "description": "Find broken links, missing images, etc in your HTML, even in local files",
-  "main": "out/index.js",
+  "main": "out/BrokenLinkChecker.js",
   "bin": {
     "blcl": "out/bin.js"
   },
