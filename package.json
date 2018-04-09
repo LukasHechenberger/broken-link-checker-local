@@ -13,6 +13,7 @@
     "compile": "babel src --out-dir out",
     "compile:watch": "npm run compile -- --watch",
     "docs": "esdoc -c esdoc.json",
+    "docs:coverage": "esdoc-coverage -c esdoc.json",
     "lint": "eslint src test",
     "prepublish": "npm run compile && npm run docs",
     "test": "node_modules/.bin/mocha --recursive --require babel-register \"./test/**/*.spec.js\"",
@@ -37,11 +38,11 @@
     "yargs": "^6.6.0"
   },
   "devDependencies": {
+    "@ls-age/esdoc-coverage": "^0.1.6",
     "babel-cli": "^6.18.0",
     "babel-plugin-istanbul": "^3.1.2",
     "babel-preset-node6": "^11.0.0",
     "esdoc": "^0.5.2",
-    "esdoc-plugin-require-coverage": "^0.1.2",
     "eslint": "^3.13.1",
     "eslint-config-lsage": "^0.1.0",
     "mocha": "^3.2.0",
