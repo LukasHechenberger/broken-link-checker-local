@@ -1,14 +1,10 @@
-# Changelog
+<a name="0.1.2"></a>
+## 0.1.2 (2018-04-09)
 
-## 0.1.1
 
-> **Date:** 2017-1-20
+### Bug Fixes
 
-- **Fix**
-  - Invalid path to *blc* when installed locally.
+* Setup continuous delivery ([6ace7d3](https://github.com/LukasHechenberger/broken-link-checker-local/commits/6ace7d3))
 
-## 0.1.0
 
-> **Date:** 2017-1-20
 
-- Initial release
