@@ -1,5 +1,6 @@
 import expect from 'unexpected';
 import { spy } from 'sinon';
+import request from 'supertest';
 import { createServer, Server } from 'http';
 import { join } from 'path';
 import getPort from 'get-port';
@@ -30,6 +31,19 @@ describe('BrokenLinkChecker', function() {
         .then(() => {
           expect(checker.server, 'to be a', Server);
         });
+    });
+
+    it('should serve on custom baseUrl if passed', async function() {
+      checker.options = { baseUrl: '/test/' };
+
+      const port = await getPort();
+      await checker.startServer(port);
+
+      const index = await request(checker.app).get('/');
+      expect(index.status, 'to equal', 404);
+
+      const customIndex = await request(checker.app).get('/test/BrokenLinkChecker.spec.js');
+      expect(customIndex.status, 'to equal', 200);
     });
 
     it('should fail without path', function() {
@@ -101,6 +115,13 @@ describe('BrokenLinkChecker', function() {
 
       return expect(checker.validateOptions(), 'when fulfilled', 'to be a', 'object');
     });
+
+    it('should add leading slash to base-url if needed', async function() {
+      const checker = new BrokenLinkChecker(['dir', '--base-url', 'asdf']);
+
+      await expect(checker.validateOptions(), 'when fulfilled', 'to be a', 'object');
+      expect(checker.baseUrl, 'to equal', '/asdf');
+    })
   });
 
   /** @test {BrokenLinkChecker#getPathOrUrl} */
