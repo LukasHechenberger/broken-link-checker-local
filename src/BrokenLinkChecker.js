@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { spawn } from 'child_process';
 import { join } from 'path';
 import { parse } from 'url';
@@ -51,6 +53,14 @@ export default class BrokenLinkChecker {
   }
 
   /**
+   * The base url to use when serving files.
+   * @type {String}
+   */
+  get baseUrl() {
+    return this.options ? this.options.baseUrl : '/';
+  }
+
+  /**
    * Starts a server serving {@link BrokenLinkChecker#path} on the speficied port.
    * @param {Number} port The port to server on.
    * @return {Promise<Number, Error>} Resolved with the port used, rejected with an error if
@@ -63,13 +73,16 @@ export default class BrokenLinkChecker {
       }
 
       console.log(colors.white('Starting server for path:'), colors.yellow(this.path));
+      if (this.baseUrl !== '/') {
+        console.log(colors.gray(`Using base url '${this.options.baseUrl}'`));
+      }
       /**
        * The instance of {@link express.Application} used.
        * @type {express.Application}
        */
       this.app = express();
 
-      this.app.use('/', express.static(this.path));
+      this.app.use(this.baseUrl, express.static(this.path));
 
       /**
        * The server used.
@@ -93,7 +106,7 @@ export default class BrokenLinkChecker {
       } else {
         let args = [
           port ?
-            `http://localhost:${port}` :
+            `http://localhost:${port}${this.baseUrl}` :
             this.url,
           '--colors',
         ];
@@ -131,6 +144,12 @@ export default class BrokenLinkChecker {
           reject(err || new Error(msg));
         })
         .argv;
+
+      // Add leading '/' to baseUrl if needed
+      if (this.options.baseUrl[0] !== '/') {
+        console.error('Adding slash');
+        this.options.baseUrl = `/${this.options.baseUrl}`;
+      }
 
       resolve(this.options);
     });
