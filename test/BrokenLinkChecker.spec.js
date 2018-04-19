@@ -121,7 +121,7 @@ describe('BrokenLinkChecker', function() {
 
       await expect(checker.validateOptions(), 'when fulfilled', 'to be a', 'object');
       expect(checker.baseUrl, 'to equal', '/asdf');
-    })
+    });
   });
 
   /** @test {BrokenLinkChecker#getPathOrUrl} */
@@ -177,7 +177,7 @@ describe('BrokenLinkChecker', function() {
     });
 
     after(function() {
-      console.error.restore();
+      console.error.restore(); // eslint-disable-line no-console
     });
   });
 

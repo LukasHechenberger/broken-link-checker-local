@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { spawn } from 'child_process';
 import { join } from 'path';
 import { parse } from 'url';
