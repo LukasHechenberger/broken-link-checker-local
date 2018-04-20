@@ -1,5 +1,7 @@
 # broken-link-checker-local
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/LukasHechenberger/broken-link-checker-local.svg)](https://greenkeeper.io/)
+
 > Find broken links, missing images, etc in your HTML, even in local files.
 
 [![CircleCI](https://circleci.com/gh/LukasHechenberger/broken-link-checker-local.svg?style=shield&circle-token=5f7572151da460505166029bdfeefbc32d6bc720)](https://circleci.com/gh/LukasHechenberger/broken-link-checker-local)
