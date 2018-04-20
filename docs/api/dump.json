@@ -1,0 +1,1761 @@
+[
+  {
+    "__docId__": 0,
+    "kind": "file",
+    "name": "src/BrokenLinkChecker.js",
+    "content": "/* eslint-disable no-console */\n\nimport { spawn } from 'child_process';\nimport { join } from 'path';\nimport { parse } from 'url';\nimport yargs from 'yargs';\nimport express from 'express';\nimport getPort from 'get-port';\nimport colors from 'chalk';\n\nimport pkg from '../package.json';\nimport cliOptions from './cliOptions';\n\n/**\n * The Command Line Interface.\n */\nexport default class BrokenLinkChecker {\n\n  /**\n   * Creates a new BrokenLinkChecker with the specified options.\n   * @param {String[]} argv The arguments to handle.\n   */\n  constructor(argv = []) {\n    /**\n     * The arguments to handle.\n     * @type {String[]}\n     */\n    this._argv = argv;\n\n    /**\n     * `true` if serving a directory is needed to run the check.\n     * @type {Boolean}\n     */\n    this.needServer = true;\n\n    /**\n     * The path to check. Only set if a path is given as input.\n     * @type {String}\n     */\n    this.path = false;\n\n    /**\n     * The URL to check. Only set if a URL is given as input.\n     * @type {String}\n     */\n    this.url = false;\n\n    /**\n     * The parsed command line options used.\n     * @type {Object}\n     */\n    this.options = false;\n  }\n\n  /**\n   * The base url to use when serving files.\n   * @type {String}\n   */\n  get baseUrl() {\n    return this.options ? this.options.baseUrl : '/';\n  }\n\n  /**\n   * Starts a server serving {@link BrokenLinkChecker#path} on the speficied port.\n   * @param {Number} port The port to server on.\n   * @return {Promise<Number, Error>} Resolved with the port used, rejected with an error if\n   * listening on the port failed.\n   */\n  startServer(port) {\n    return new Promise((resolve, reject) => {\n      if (!this.path) {\n        reject(new Error('No path given'));\n      }\n\n      console.log(colors.white('Starting server for path:'), colors.yellow(this.path));\n      if (this.baseUrl !== '/') {\n        console.log(colors.gray(`Using base url '${this.options.baseUrl}'`));\n      }\n      /**\n       * The instance of {@link express.Application} used.\n       * @type {express.Application}\n       */\n      this.app = express();\n\n      this.app.use(this.baseUrl, express.static(this.path));\n\n      /**\n       * The server used.\n       * @type {http.Server}\n       */\n      this.server = this.app.listen(port);\n      this.server.on('listening', () => resolve(port));\n      this.server.on('error', err => reject(err));\n    });\n  }\n\n  /**\n   * Runs `blc` on the given port or {@link BrokenLinkChecker#url}.\n   * @param {Number} [port] The port to check\n   * @return {Promise<Number>} Resolved with `blc`'s exit code.\n   */\n  runChecker(port) {\n    return new Promise((resolve, reject) => {\n      if (!port && !this.url) {\n        reject(new Error('No url given'));\n      } else {\n        let args = [\n          port ?\n            `http://localhost:${port}${this.baseUrl}` :\n            this.url,\n          '--colors',\n        ];\n\n        // Add options passed to blc\n        args = args.concat(this._argv);\n\n        const blc = spawn(require.resolve('broken-link-checker/bin/blc'), args, {\n          stdio: 'inherit',\n        });\n\n        blc.on('close', code => resolve(code));\n      }\n    });\n  }\n\n  /**\n   * Validates options.\n   * @return {Promise<Object, Error>} Fulfilled with the parsed options, rejected if validation\n   * failed.\n   */\n  validateOptions() {\n    return new Promise((resolve, reject) => {\n      this.options = yargs(this._argv)\n        .usage('Usage: $0 [options] <directory or url>')\n        .demandCommand(1, 1, 'Neither directory nor url given')\n        .version(pkg.version)\n        .alias('version', 'V')\n        .alias('help', 'h')\n        .option(cliOptions)\n        .help()\n        .fail((msg, err, y) => {\n          console.log(y.help());\n\n          reject(err || new Error(msg));\n        })\n        .argv;\n\n      // Add leading '/' to baseUrl if needed\n      if (this.options.baseUrl[0] !== '/') {\n        console.error('Adding slash');\n        this.options.baseUrl = `/${this.options.baseUrl}`;\n      }\n\n      resolve(this.options);\n    });\n  }\n\n  /**\n   * Sets either {@link BrokenLinkChecker#path} or {@link BrokenLinkChecker#path} from the first\n   * non-option argument provided.\n   */\n  getPathOrUrl() {\n    const dirOrUrl = this.options._[0];\n    const url = parse(dirOrUrl);\n\n    if (url.hostname) {\n      this.url = dirOrUrl;\n      this.needServer = false;\n    } else {\n      this.path = join(process.cwd(), dirOrUrl);\n    }\n  }\n\n  /**\n   * Exits BrokenLinkChecker with the specified exit code and (optionally) an error that occurred.\n   * @param {Number} code The code to exit with.\n   * @param {Error} err The error to report.\n   * @return {Number} code The code to exit with.\n   */\n  exit(code, err) {\n    if (err) {\n      console.error(colors.red(`Error: ${err.message}`));\n    }\n\n    if (this.server) {\n      this.server.close();\n    }\n\n    process.exitCode = code;\n\n    return code;\n  }\n\n  /**\n   * Launches the CLI\n   */\n  launch() {\n    return this.validateOptions()\n      .then(() => this.getPathOrUrl())\n      .then(() => {\n        if (this.needServer) {\n          return getPort()\n            .then(port => this.startServer(port))\n            .then(port => this.runChecker(port));\n        }\n\n        return this.runChecker();\n      })\n      .then(code => this.exit(code))\n      .catch(err => this.exit(1, err));\n  }\n\n}\n\n/**\n * @external {express.Application} http://expressjs.com/en/4x/api.html#app\n */\n\n/**\n * @external {http.Server} https://nodejs.org/api/http.html#http_class_http_server\n */\n",
+    "static": true,
+    "longname": "src/BrokenLinkChecker.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 1,
+    "kind": "class",
+    "name": "BrokenLinkChecker",
+    "memberof": "src/BrokenLinkChecker.js",
+    "static": true,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "access": null,
+    "export": true,
+    "importPath": "broken-link-checker-local/src/BrokenLinkChecker.js",
+    "importStyle": "BrokenLinkChecker",
+    "description": "The Command Line Interface.",
+    "lineNumber": 17,
+    "interface": false
+  },
+  {
+    "__docId__": 2,
+    "kind": "external",
+    "name": "express.Application",
+    "externalLink": "http://expressjs.com/en/4x/api.html#app",
+    "memberof": "src/BrokenLinkChecker.js",
+    "static": true,
+    "longname": "src/BrokenLinkChecker.js~express.Application",
+    "access": null,
+    "description": ""
+  },
+  {
+    "__docId__": 3,
+    "kind": "external",
+    "name": "http.Server",
+    "externalLink": "https://nodejs.org/api/http.html#http_class_http_server",
+    "memberof": "src/BrokenLinkChecker.js",
+    "static": true,
+    "longname": "src/BrokenLinkChecker.js~http.Server",
+    "access": null,
+    "description": ""
+  },
+  {
+    "__docId__": 4,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#constructor",
+    "access": null,
+    "description": "Creates a new BrokenLinkChecker with the specified options.",
+    "lineNumber": 23,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String[]"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "argv",
+        "description": "The arguments to handle."
+      }
+    ]
+  },
+  {
+    "__docId__": 5,
+    "kind": "member",
+    "name": "_argv",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#_argv",
+    "access": null,
+    "description": "The arguments to handle.",
+    "lineNumber": 28,
+    "type": {
+      "nullable": null,
+      "types": [
+        "String[]"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 6,
+    "kind": "member",
+    "name": "needServer",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#needServer",
+    "access": null,
+    "description": "`true` if serving a directory is needed to run the check.",
+    "lineNumber": 34,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Boolean"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 7,
+    "kind": "member",
+    "name": "path",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#path",
+    "access": null,
+    "description": "The path to check. Only set if a path is given as input.",
+    "lineNumber": 40,
+    "type": {
+      "nullable": null,
+      "types": [
+        "String"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 8,
+    "kind": "member",
+    "name": "url",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#url",
+    "access": null,
+    "description": "The URL to check. Only set if a URL is given as input.",
+    "lineNumber": 46,
+    "type": {
+      "nullable": null,
+      "types": [
+        "String"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 9,
+    "kind": "member",
+    "name": "options",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#options",
+    "access": null,
+    "description": "The parsed command line options used.",
+    "lineNumber": 52,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 10,
+    "kind": "get",
+    "name": "baseUrl",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#baseUrl",
+    "access": null,
+    "description": "The base url to use when serving files.",
+    "lineNumber": 59,
+    "type": {
+      "nullable": null,
+      "types": [
+        "String"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 11,
+    "kind": "method",
+    "name": "startServer",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#startServer",
+    "access": null,
+    "description": "Starts a server serving {@link BrokenLinkChecker#path} on the speficied port.",
+    "lineNumber": 69,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Number"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "port",
+        "description": "The port to server on."
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise<Number, Error>"
+      ],
+      "spread": false,
+      "description": "Resolved with the port used, rejected with an error if\nlistening on the port failed."
+    }
+  },
+  {
+    "__docId__": 12,
+    "kind": "member",
+    "name": "app",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#app",
+    "access": null,
+    "description": "The instance of {@link express.Application} used.",
+    "lineNumber": 83,
+    "type": {
+      "nullable": null,
+      "types": [
+        "express.Application"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 13,
+    "kind": "member",
+    "name": "server",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#server",
+    "access": null,
+    "description": "The server used.",
+    "lineNumber": 91,
+    "type": {
+      "nullable": null,
+      "types": [
+        "http.Server"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 14,
+    "kind": "method",
+    "name": "runChecker",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#runChecker",
+    "access": null,
+    "description": "Runs `blc` on the given port or {@link BrokenLinkChecker#url}.",
+    "lineNumber": 102,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "port",
+        "description": "The port to check"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise<Number>"
+      ],
+      "spread": false,
+      "description": "Resolved with `blc`'s exit code."
+    }
+  },
+  {
+    "__docId__": 15,
+    "kind": "method",
+    "name": "validateOptions",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#validateOptions",
+    "access": null,
+    "description": "Validates options.",
+    "lineNumber": 131,
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise<Object, Error>"
+      ],
+      "spread": false,
+      "description": "Fulfilled with the parsed options, rejected if validation\nfailed."
+    }
+  },
+  {
+    "__docId__": 16,
+    "kind": "member",
+    "name": "options",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#options",
+    "access": null,
+    "description": null,
+    "lineNumber": 133,
+    "undocument": true,
+    "unknown": [
+      {
+        "tagName": "@_undocument",
+        "tagValue": ""
+      }
+    ],
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 17,
+    "kind": "method",
+    "name": "getPathOrUrl",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#getPathOrUrl",
+    "access": null,
+    "description": "Sets either {@link BrokenLinkChecker#path} or {@link BrokenLinkChecker#path} from the first\nnon-option argument provided.",
+    "lineNumber": 162,
+    "params": []
+  },
+  {
+    "__docId__": 18,
+    "kind": "member",
+    "name": "url",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#url",
+    "access": null,
+    "description": null,
+    "lineNumber": 167,
+    "undocument": true,
+    "unknown": [
+      {
+        "tagName": "@_undocument",
+        "tagValue": ""
+      }
+    ],
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 19,
+    "kind": "member",
+    "name": "needServer",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#needServer",
+    "access": null,
+    "description": null,
+    "lineNumber": 168,
+    "undocument": true,
+    "unknown": [
+      {
+        "tagName": "@_undocument",
+        "tagValue": ""
+      }
+    ],
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 20,
+    "kind": "member",
+    "name": "path",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#path",
+    "access": null,
+    "description": null,
+    "lineNumber": 170,
+    "undocument": true,
+    "unknown": [
+      {
+        "tagName": "@_undocument",
+        "tagValue": ""
+      }
+    ],
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 21,
+    "kind": "method",
+    "name": "exit",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#exit",
+    "access": null,
+    "description": "Exits BrokenLinkChecker with the specified exit code and (optionally) an error that occurred.",
+    "lineNumber": 180,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Number"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "code",
+        "description": "The code to exit with."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Error"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "err",
+        "description": "The error to report."
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Number"
+      ],
+      "spread": false,
+      "description": "code The code to exit with."
+    }
+  },
+  {
+    "__docId__": 22,
+    "kind": "method",
+    "name": "launch",
+    "memberof": "src/BrokenLinkChecker.js~BrokenLinkChecker",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/BrokenLinkChecker.js~BrokenLinkChecker#launch",
+    "access": null,
+    "description": "Launches the CLI",
+    "lineNumber": 197,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 23,
+    "kind": "file",
+    "name": "src/bin.js",
+    "content": "#!/usr/bin/env node\n\nimport BrokenLinkChecker from './BrokenLinkChecker';\n\n(new BrokenLinkChecker(process.argv.slice(2))).launch();\n",
+    "static": true,
+    "longname": "src/bin.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 24,
+    "kind": "file",
+    "name": "src/cliOptions.js",
+    "content": "import blcDefaults from 'broken-link-checker/lib/internal/defaultOptions';\n\n/**\n * Command line options available\n * @type {Object}\n * @property {yargs.Option<String[]>} [exclude=[]] A keyword/glob to match links against. Can be\n * used multiple times.\n * @property {yargs.Option<Boolean>} [exclude-external=false] Will not check external links.\n * @property {yargs.Option<Boolean>} [exclude-internal=false] Will not check internal links.\n * @property {yargs.Option<Number>} [filter-level=1] The types of tags and attributes that are\n * considered links.\n * @property {yargs.Option<Boolean>} [follow=false] Force-follow robot exclusions.\n * @property {yargs.Option<Boolean>} [get=false] Change request method to GET.\n * @property {yargs.Option<Boolean>} [recursive=false] Recursively scan \"crawl\" the HTML\n * document(s).\n * @property {yargs.Option<String>} [user-agent] The user agent to use for link checks.\n * @property {yargs.Option<Boolean>} [verbose=false] Display excluded links.\n */\nconst CliOptions = {\n  exclude: {\n    desc: 'A keyword/glob to match links against. Can be used multiple times.',\n    default: blcDefaults.excludedKeywords,\n  },\n  'exclude-external': {\n    desc: 'Will not check external links.',\n    alias: 'e',\n    type: 'boolean',\n    default: false,\n  },\n  'exclude-internal': {\n    desc: 'Will not check internal links.',\n    alias: 'i',\n    type: 'boolean',\n    default: false,\n  },\n  'filter-level': {\n    desc: 'The types of tags and attributes that are considered links.\\n' +\n    '  0: clickable links\\n' +\n    '  1: 0 + media, iframes, meta refreshes\\n' +\n    '  2: 1 + stylesheets, scripts, forms\\n' +\n    '  3: 2 + metadata\\n',\n    type: 'number',\n    default: blcDefaults.filterLevel,\n  },\n  follow: {\n    desc: 'Force-follow robot exclusions.',\n    alias: 'f',\n    type: 'boolean',\n    default: false,\n  },\n  get: {\n    desc: 'Change request method to GET.',\n    alias: 'g',\n    type: 'boolean',\n    default: false,\n  },\n  ordered: {\n    desc: 'Maintain the order of links as they appear in their HTML document.',\n    alias: 'o',\n    type: 'boolean',\n    default: false,\n  },\n  recursive: {\n    desc: 'Recursively scan \"crawl\" the HTML document(s).',\n    alias: 'r',\n    type: 'boolean',\n    default: false,\n  },\n  'base-url': {\n    desc: 'Serve files using alternative base url.',\n    alias: 'b',\n    type: 'string',\n    default: '/',\n  },\n  'user-agent': {\n    desc: 'The user agent to use for link checks.',\n    type: 'string',\n    default: blcDefaults.userAgent,\n  },\n  verbose: {\n    desc: 'Display excluded links.',\n    alias: 'v',\n    type: 'boolean',\n    default: false,\n  },\n};\n\nexport default CliOptions;\n\n/**\n * @external {yargs.Option} http://yargs.js.org/docs/#methods-optionskey-opt\n */\n",
+    "static": true,
+    "longname": "src/cliOptions.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 25,
+    "kind": "variable",
+    "name": "CliOptions",
+    "memberof": "src/cliOptions.js",
+    "static": true,
+    "longname": "src/cliOptions.js~CliOptions",
+    "access": null,
+    "export": true,
+    "importPath": "broken-link-checker-local/src/cliOptions.js",
+    "importStyle": "CliOptions",
+    "description": "Command line options available",
+    "lineNumber": 19,
+    "properties": [
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<String[]>"
+        ],
+        "spread": false,
+        "optional": true,
+        "defaultValue": "[]",
+        "defaultRaw": [],
+        "name": "exclude",
+        "description": "A keyword/glob to match links against. Can be\nused multiple times."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<Boolean>"
+        ],
+        "spread": false,
+        "optional": true,
+        "defaultValue": "false",
+        "defaultRaw": false,
+        "name": "exclude-external",
+        "description": "Will not check external links."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<Boolean>"
+        ],
+        "spread": false,
+        "optional": true,
+        "defaultValue": "false",
+        "defaultRaw": false,
+        "name": "exclude-internal",
+        "description": "Will not check internal links."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<Number>"
+        ],
+        "spread": false,
+        "optional": true,
+        "defaultValue": "1",
+        "defaultRaw": 1,
+        "name": "filter-level",
+        "description": "The types of tags and attributes that are\nconsidered links."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<Boolean>"
+        ],
+        "spread": false,
+        "optional": true,
+        "defaultValue": "false",
+        "defaultRaw": false,
+        "name": "follow",
+        "description": "Force-follow robot exclusions."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<Boolean>"
+        ],
+        "spread": false,
+        "optional": true,
+        "defaultValue": "false",
+        "defaultRaw": false,
+        "name": "get",
+        "description": "Change request method to GET."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<Boolean>"
+        ],
+        "spread": false,
+        "optional": true,
+        "defaultValue": "false",
+        "defaultRaw": false,
+        "name": "recursive",
+        "description": "Recursively scan \"crawl\" the HTML\ndocument(s)."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<String>"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "user-agent",
+        "description": "The user agent to use for link checks."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "yargs.Option<Boolean>"
+        ],
+        "spread": false,
+        "optional": true,
+        "defaultValue": "false",
+        "defaultRaw": false,
+        "name": "verbose",
+        "description": "Display excluded links."
+      }
+    ],
+    "type": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 26,
+    "kind": "external",
+    "name": "yargs.Option",
+    "externalLink": "http://yargs.js.org/docs/#methods-optionskey-opt",
+    "memberof": "src/cliOptions.js",
+    "static": true,
+    "longname": "src/cliOptions.js~yargs.Option",
+    "access": null,
+    "description": ""
+  },
+  {
+    "__docId__": 28,
+    "kind": "external",
+    "name": "Infinity",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Infinity",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Infinity",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 29,
+    "kind": "external",
+    "name": "NaN",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~NaN",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 30,
+    "kind": "external",
+    "name": "undefined",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~undefined",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 31,
+    "kind": "external",
+    "name": "null",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~null",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 32,
+    "kind": "external",
+    "name": "Object",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Object",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 33,
+    "kind": "external",
+    "name": "object",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~object",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 34,
+    "kind": "external",
+    "name": "Function",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Function",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 35,
+    "kind": "external",
+    "name": "function",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~function",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 36,
+    "kind": "external",
+    "name": "Boolean",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Boolean",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 37,
+    "kind": "external",
+    "name": "boolean",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~boolean",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 38,
+    "kind": "external",
+    "name": "Symbol",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Symbol",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 39,
+    "kind": "external",
+    "name": "Error",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Error",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 40,
+    "kind": "external",
+    "name": "EvalError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/EvalError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~EvalError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 41,
+    "kind": "external",
+    "name": "InternalError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/InternalError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~InternalError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 42,
+    "kind": "external",
+    "name": "RangeError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~RangeError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 43,
+    "kind": "external",
+    "name": "ReferenceError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~ReferenceError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 44,
+    "kind": "external",
+    "name": "SyntaxError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~SyntaxError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 45,
+    "kind": "external",
+    "name": "TypeError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~TypeError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 46,
+    "kind": "external",
+    "name": "URIError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~URIError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 47,
+    "kind": "external",
+    "name": "Number",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Number",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 48,
+    "kind": "external",
+    "name": "number",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~number",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 49,
+    "kind": "external",
+    "name": "Date",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Date",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 50,
+    "kind": "external",
+    "name": "String",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~String",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 51,
+    "kind": "external",
+    "name": "string",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~string",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 52,
+    "kind": "external",
+    "name": "RegExp",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~RegExp",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 53,
+    "kind": "external",
+    "name": "Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 54,
+    "kind": "external",
+    "name": "Int8Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int8Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int8Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 55,
+    "kind": "external",
+    "name": "Uint8Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 56,
+    "kind": "external",
+    "name": "Uint8ClampedArray",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8ClampedArray",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8ClampedArray",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 57,
+    "kind": "external",
+    "name": "Int16Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int16Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int16Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 58,
+    "kind": "external",
+    "name": "Uint16Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint16Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint16Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 59,
+    "kind": "external",
+    "name": "Int32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int32Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 60,
+    "kind": "external",
+    "name": "Uint32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint32Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 61,
+    "kind": "external",
+    "name": "Float32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Float32Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 62,
+    "kind": "external",
+    "name": "Float64Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float64Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Float64Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 63,
+    "kind": "external",
+    "name": "Map",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Map",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 64,
+    "kind": "external",
+    "name": "Set",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Set",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 65,
+    "kind": "external",
+    "name": "WeakMap",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakMap",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 66,
+    "kind": "external",
+    "name": "WeakSet",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakSet",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 67,
+    "kind": "external",
+    "name": "ArrayBuffer",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~ArrayBuffer",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 68,
+    "kind": "external",
+    "name": "DataView",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~DataView",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 69,
+    "kind": "external",
+    "name": "JSON",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~JSON",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 70,
+    "kind": "external",
+    "name": "Promise",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Promise",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 71,
+    "kind": "external",
+    "name": "Generator",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Generator",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 72,
+    "kind": "external",
+    "name": "GeneratorFunction",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/GeneratorFunction",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~GeneratorFunction",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 73,
+    "kind": "external",
+    "name": "Reflect",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Reflect",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 74,
+    "kind": "external",
+    "name": "Proxy",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Proxy",
+    "access": null,
+    "description": "",
+    "lineNumber": 193,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 76,
+    "kind": "external",
+    "name": "CanvasRenderingContext2D",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/WebAPIExternal.js~CanvasRenderingContext2D",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 77,
+    "kind": "external",
+    "name": "DocumentFragment",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/WebAPIExternal.js~DocumentFragment",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 78,
+    "kind": "external",
+    "name": "Element",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Element",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/WebAPIExternal.js~Element",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 79,
+    "kind": "external",
+    "name": "Event",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Event",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/WebAPIExternal.js~Event",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 80,
+    "kind": "external",
+    "name": "Node",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Node",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/WebAPIExternal.js~Node",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 81,
+    "kind": "external",
+    "name": "NodeList",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/NodeList",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/WebAPIExternal.js~NodeList",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 82,
+    "kind": "external",
+    "name": "XMLHttpRequest",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/WebAPIExternal.js~XMLHttpRequest",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 83,
+    "kind": "external",
+    "name": "AudioContext",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/AudioContext",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "static": true,
+    "longname": "BuiltinExternal/WebAPIExternal.js~AudioContext",
+    "access": null,
+    "description": "",
+    "lineNumber": 34,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 84,
+    "kind": "testFile",
+    "name": "test/BrokenLinkChecker.spec.js",
+    "content": "import expect from 'unexpected';\nimport { spy } from 'sinon';\nimport request from 'supertest';\nimport { createServer, Server } from 'http';\nimport { join } from 'path';\nimport getPort from 'get-port';\nimport BrokenLinkChecker from '../src/BrokenLinkChecker';\n\n/** @test {BrokenLinkChecker} */\ndescribe('BrokenLinkChecker', function() {\n  /** @test {BrokenLinkChecker#startServer} */\n  describe('#startServer', function() {\n    const checker = new BrokenLinkChecker();\n    checker.path = __dirname;\n\n    it('should fail with invalid port', function() {\n      return expect(checker.startServer(80), 'to be rejected with', /^listen/);\n    });\n\n    it('should create instance of express', function() {\n      return getPort()\n        .then(port => checker.startServer(port))\n        .then(() => {\n          expect(checker.app, 'to be a', 'function');\n        });\n    });\n\n    it('should create instance of http.Server', function() {\n      return getPort()\n        .then(port => checker.startServer(port))\n        .then(() => {\n          expect(checker.server, 'to be a', Server);\n        });\n    });\n\n    it('should serve on custom baseUrl if passed', async function() {\n      checker.options = { baseUrl: '/test/' };\n\n      const port = await getPort();\n      await checker.startServer(port);\n\n      const index = await request(checker.app).get('/');\n      expect(index.status, 'to equal', 404);\n\n      const customIndex = await request(checker.app).get('/test/BrokenLinkChecker.spec.js');\n      expect(customIndex.status, 'to equal', 200);\n    });\n\n    it('should fail without path', function() {\n      checker.path = false;\n      return expect(checker.startServer(9000), 'to be rejected with', 'No path given');\n    });\n  });\n\n  /** @test {BrokenLinkChecker#runChecker} */\n  describe('#runChecker', function() {\n    let checker;\n\n    this.timeout(5000);\n\n    beforeEach(() => (checker = new BrokenLinkChecker()));\n\n    it('should fail without port and url', function() {\n      return expect(checker.runChecker(), 'to be rejected with', 'No url given');\n    });\n\n    it('should fail with invalid url', function() {\n      checker.url = 'http://localhost:80';\n      return expect(checker.runChecker(), 'to be fulfilled with', 1);\n    });\n\n    it('should fail with path to invalid document', function() {\n      checker.path = join(__dirname, 'fixtures', 'broken');\n\n      return expect(\n        getPort()\n          .then(port => checker.startServer(port))\n          .then(port => checker.runChecker(port)),\n        'to be fulfilled with', 1\n      );\n    });\n\n    it('should work with path to valid document', function() {\n      checker.path = join(__dirname, 'fixtures', 'no-broken');\n\n      return expect(\n        getPort()\n          .then(port => checker.startServer(port))\n          .then(port => checker.runChecker(port)),\n        'to be fulfilled with', 0\n      );\n    });\n  });\n\n  /** @test {BrokenLinkChecker#validateOptions} */\n  describe('#validateOptions', function() {\n    it('should fail without non-optional argument', function() {\n      const checker = new BrokenLinkChecker();\n\n      return expect(checker.validateOptions(), 'to be rejected with',\n        'Neither directory nor url given'\n      );\n    });\n\n    it('should fail with multiple non-optional arguments ', function() {\n      const checker = new BrokenLinkChecker(['dir', 'another']);\n\n      return expect(checker.validateOptions(), 'to be rejected with',\n        'Too many non-option arguments: got 2, maximum of 1'\n      );\n    });\n\n    it('should work with single non-optional argument', function() {\n      const checker = new BrokenLinkChecker(['dir']);\n\n      return expect(checker.validateOptions(), 'when fulfilled', 'to be a', 'object');\n    });\n\n    it('should add leading slash to base-url if needed', async function() {\n      const checker = new BrokenLinkChecker(['dir', '--base-url', 'asdf']);\n\n      await expect(checker.validateOptions(), 'when fulfilled', 'to be a', 'object');\n      expect(checker.baseUrl, 'to equal', '/asdf');\n    });\n  });\n\n  /** @test {BrokenLinkChecker#getPathOrUrl} */\n  describe('#getPathOrUrl', function() {\n    it('should set url if a url is passed', function() {\n      const checker = new BrokenLinkChecker(['http://google.com']);\n\n      return checker.validateOptions()\n        .then(() => checker.getPathOrUrl())\n        .then(() => expect(checker.url, 'to equal', 'http://google.com'));\n    });\n\n    it('should set path if a path is passed', function() {\n      const checker = new BrokenLinkChecker(['./directory']);\n\n      return checker.validateOptions()\n        .then(() => checker.getPathOrUrl())\n        .then(() => expect(checker.path, 'to equal', join(process.cwd(), 'directory')));\n    });\n  });\n\n  /** @test {BrokenLinkChecker#exit} */\n  describe('#exit', function() {\n    let checker;\n    let consoleError;\n\n    before(function() {\n      consoleError = spy(console, 'error');\n    });\n\n    beforeEach(function() {\n      checker = new BrokenLinkChecker();\n    });\n\n    it('should set exitCode', function() {\n      checker.exit(123);\n      expect(process.exitCode, 'to equal', 123);\n    });\n\n    it('should report error', function() {\n      const errorMessage = 'an error';\n\n      checker.exit(1, new Error(errorMessage));\n      expect(consoleError.calledOnce, 'to be', true);\n      expect(consoleError.lastCall.args[0], 'to contain', errorMessage);\n    });\n\n    it('should close server', function(done) {\n      checker.server = createServer();\n      checker.server.on('close', done);\n\n      checker.exit(1);\n    });\n\n    after(function() {\n      console.error.restore(); // eslint-disable-line no-console\n    });\n  });\n\n  /** @test {BrokenLinkChecker#launch} */\n  describe('#launch', function() {\n    this.timeout(5000);\n\n    it('should fail with invalid directory', function() {\n      const checker = new BrokenLinkChecker([join('test', 'fixtures', 'broken')]);\n\n      return expect(checker.launch(), 'to be fulfilled with', 1);\n    });\n\n    it('should work with valid directory', function() {\n      const checker = new BrokenLinkChecker([join('test', 'fixtures', 'no-broken')]);\n\n      return expect(checker.launch(), 'to be fulfilled with', 0);\n    });\n\n    it('should fail with invalid url', function() {\n      const checker = new BrokenLinkChecker(['htt://ls-age.com']);\n\n      return expect(checker.launch(), 'to be fulfilled with', 1);\n    });\n\n    it('should work with valid url', function() {\n      const checker = new BrokenLinkChecker([join('test', 'fixtures', 'no-broken')]);\n\n      return expect(\n        getPort()\n          .then(() => checker.validateOptions())\n          .then(() => checker.getPathOrUrl())\n          .then(getPort)\n          .then(port => checker.startServer(port))\n          .then(port => (new BrokenLinkChecker([`http://localhost:${port}`])).launch()),\n        'to be fulfilled with', 0\n      );\n    });\n  });\n});\n",
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 85,
+    "kind": "testDescribe",
+    "name": "describe0",
+    "testId": 0,
+    "memberof": "test/BrokenLinkChecker.spec.js",
+    "testDepth": 0,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0",
+    "access": null,
+    "description": "BrokenLinkChecker",
+    "lineNumber": 10,
+    "unknown": [
+      {
+        "tagName": "@test",
+        "tagValue": "{BrokenLinkChecker}"
+      }
+    ],
+    "testTargets": [
+      "BrokenLinkChecker"
+    ]
+  },
+  {
+    "__docId__": 86,
+    "kind": "testDescribe",
+    "name": "describe1",
+    "testId": 1,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0",
+    "testDepth": 1,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe1",
+    "access": null,
+    "description": "#startServer",
+    "lineNumber": 12,
+    "unknown": [
+      {
+        "tagName": "@test",
+        "tagValue": "{BrokenLinkChecker#startServer}"
+      }
+    ],
+    "testTargets": [
+      "BrokenLinkChecker#startServer"
+    ]
+  },
+  {
+    "__docId__": 87,
+    "kind": "testIt",
+    "name": "it2",
+    "testId": 2,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe1",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe1.it2",
+    "access": null,
+    "description": "should fail with invalid port",
+    "lineNumber": 16
+  },
+  {
+    "__docId__": 88,
+    "kind": "testIt",
+    "name": "it3",
+    "testId": 3,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe1",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe1.it3",
+    "access": null,
+    "description": "should create instance of express",
+    "lineNumber": 20
+  },
+  {
+    "__docId__": 89,
+    "kind": "testIt",
+    "name": "it4",
+    "testId": 4,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe1",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe1.it4",
+    "access": null,
+    "description": "should create instance of http.Server",
+    "lineNumber": 28
+  },
+  {
+    "__docId__": 90,
+    "kind": "testIt",
+    "name": "it5",
+    "testId": 5,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe1",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe1.it5",
+    "access": null,
+    "description": "should serve on custom baseUrl if passed",
+    "lineNumber": 36
+  },
+  {
+    "__docId__": 91,
+    "kind": "testIt",
+    "name": "it6",
+    "testId": 6,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe1",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe1.it6",
+    "access": null,
+    "description": "should fail without path",
+    "lineNumber": 49
+  },
+  {
+    "__docId__": 92,
+    "kind": "testDescribe",
+    "name": "describe7",
+    "testId": 7,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0",
+    "testDepth": 1,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe7",
+    "access": null,
+    "description": "#runChecker",
+    "lineNumber": 56,
+    "unknown": [
+      {
+        "tagName": "@test",
+        "tagValue": "{BrokenLinkChecker#runChecker}"
+      }
+    ],
+    "testTargets": [
+      "BrokenLinkChecker#runChecker"
+    ]
+  },
+  {
+    "__docId__": 93,
+    "kind": "testIt",
+    "name": "it8",
+    "testId": 8,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe7",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe7.it8",
+    "access": null,
+    "description": "should fail without port and url",
+    "lineNumber": 63
+  },
+  {
+    "__docId__": 94,
+    "kind": "testIt",
+    "name": "it9",
+    "testId": 9,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe7",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe7.it9",
+    "access": null,
+    "description": "should fail with invalid url",
+    "lineNumber": 67
+  },
+  {
+    "__docId__": 95,
+    "kind": "testIt",
+    "name": "it10",
+    "testId": 10,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe7",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe7.it10",
+    "access": null,
+    "description": "should fail with path to invalid document",
+    "lineNumber": 72
+  },
+  {
+    "__docId__": 96,
+    "kind": "testIt",
+    "name": "it11",
+    "testId": 11,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe7",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe7.it11",
+    "access": null,
+    "description": "should work with path to valid document",
+    "lineNumber": 83
+  },
+  {
+    "__docId__": 97,
+    "kind": "testDescribe",
+    "name": "describe12",
+    "testId": 12,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0",
+    "testDepth": 1,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe12",
+    "access": null,
+    "description": "#validateOptions",
+    "lineNumber": 96,
+    "unknown": [
+      {
+        "tagName": "@test",
+        "tagValue": "{BrokenLinkChecker#validateOptions}"
+      }
+    ],
+    "testTargets": [
+      "BrokenLinkChecker#validateOptions"
+    ]
+  },
+  {
+    "__docId__": 98,
+    "kind": "testIt",
+    "name": "it13",
+    "testId": 13,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe12",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe12.it13",
+    "access": null,
+    "description": "should fail without non-optional argument",
+    "lineNumber": 97
+  },
+  {
+    "__docId__": 99,
+    "kind": "testIt",
+    "name": "it14",
+    "testId": 14,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe12",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe12.it14",
+    "access": null,
+    "description": "should fail with multiple non-optional arguments ",
+    "lineNumber": 105
+  },
+  {
+    "__docId__": 100,
+    "kind": "testIt",
+    "name": "it15",
+    "testId": 15,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe12",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe12.it15",
+    "access": null,
+    "description": "should work with single non-optional argument",
+    "lineNumber": 113
+  },
+  {
+    "__docId__": 101,
+    "kind": "testIt",
+    "name": "it16",
+    "testId": 16,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe12",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe12.it16",
+    "access": null,
+    "description": "should add leading slash to base-url if needed",
+    "lineNumber": 119
+  },
+  {
+    "__docId__": 102,
+    "kind": "testDescribe",
+    "name": "describe17",
+    "testId": 17,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0",
+    "testDepth": 1,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe17",
+    "access": null,
+    "description": "#getPathOrUrl",
+    "lineNumber": 128,
+    "unknown": [
+      {
+        "tagName": "@test",
+        "tagValue": "{BrokenLinkChecker#getPathOrUrl}"
+      }
+    ],
+    "testTargets": [
+      "BrokenLinkChecker#getPathOrUrl"
+    ]
+  },
+  {
+    "__docId__": 103,
+    "kind": "testIt",
+    "name": "it18",
+    "testId": 18,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe17",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe17.it18",
+    "access": null,
+    "description": "should set url if a url is passed",
+    "lineNumber": 129
+  },
+  {
+    "__docId__": 104,
+    "kind": "testIt",
+    "name": "it19",
+    "testId": 19,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe17",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe17.it19",
+    "access": null,
+    "description": "should set path if a path is passed",
+    "lineNumber": 137
+  },
+  {
+    "__docId__": 105,
+    "kind": "testDescribe",
+    "name": "describe20",
+    "testId": 20,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0",
+    "testDepth": 1,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe20",
+    "access": null,
+    "description": "#exit",
+    "lineNumber": 147,
+    "unknown": [
+      {
+        "tagName": "@test",
+        "tagValue": "{BrokenLinkChecker#exit}"
+      }
+    ],
+    "testTargets": [
+      "BrokenLinkChecker#exit"
+    ]
+  },
+  {
+    "__docId__": 106,
+    "kind": "testIt",
+    "name": "it21",
+    "testId": 21,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe20",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe20.it21",
+    "access": null,
+    "description": "should set exitCode",
+    "lineNumber": 159
+  },
+  {
+    "__docId__": 107,
+    "kind": "testIt",
+    "name": "it22",
+    "testId": 22,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe20",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe20.it22",
+    "access": null,
+    "description": "should report error",
+    "lineNumber": 164
+  },
+  {
+    "__docId__": 108,
+    "kind": "testIt",
+    "name": "it23",
+    "testId": 23,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe20",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe20.it23",
+    "access": null,
+    "description": "should close server",
+    "lineNumber": 172
+  },
+  {
+    "__docId__": 109,
+    "kind": "testDescribe",
+    "name": "describe24",
+    "testId": 24,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0",
+    "testDepth": 1,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe24",
+    "access": null,
+    "description": "#launch",
+    "lineNumber": 185,
+    "unknown": [
+      {
+        "tagName": "@test",
+        "tagValue": "{BrokenLinkChecker#launch}"
+      }
+    ],
+    "testTargets": [
+      "BrokenLinkChecker#launch"
+    ]
+  },
+  {
+    "__docId__": 110,
+    "kind": "testIt",
+    "name": "it25",
+    "testId": 25,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe24",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe24.it25",
+    "access": null,
+    "description": "should fail with invalid directory",
+    "lineNumber": 188
+  },
+  {
+    "__docId__": 111,
+    "kind": "testIt",
+    "name": "it26",
+    "testId": 26,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe24",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe24.it26",
+    "access": null,
+    "description": "should work with valid directory",
+    "lineNumber": 194
+  },
+  {
+    "__docId__": 112,
+    "kind": "testIt",
+    "name": "it27",
+    "testId": 27,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe24",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe24.it27",
+    "access": null,
+    "description": "should fail with invalid url",
+    "lineNumber": 200
+  },
+  {
+    "__docId__": 113,
+    "kind": "testIt",
+    "name": "it28",
+    "testId": 28,
+    "memberof": "test/BrokenLinkChecker.spec.js~describe0.describe24",
+    "testDepth": 2,
+    "static": true,
+    "longname": "test/BrokenLinkChecker.spec.js~describe0.describe24.it28",
+    "access": null,
+    "description": "should work with valid url",
+    "lineNumber": 206
+  }
+]
