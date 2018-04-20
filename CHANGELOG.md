@@ -1,10 +1,10 @@
-<a name="0.2.0-beta.0"></a>
-# 0.2.0-beta.0 (2018-04-19)
+<a name="0.2.0"></a>
+# 0.2.0 (2018-04-20)
 
 
 ### Features
 
-* Use the 'base-url' option to specify a custom base url to serve from ([#5](https://github.com/LukasHechenberger/broken-link-checker-local/issues/5)) ([77b0731](https://github.com/LukasHechenberger/broken-link-checker-local/commits/77b0731)), closes [#4](https://github.com/LukasHechenberger/broken-link-checker-local/issues/4)
+* Use the 'base-url' option to specify a base url to serve from ([#6](https://github.com/LukasHechenberger/broken-link-checker-local/issues/6)) ([be70663](https://github.com/LukasHechenberger/broken-link-checker-local/commits/be70663)), closes [#4](https://github.com/LukasHechenberger/broken-link-checker-local/issues/4)
 
 
 
