@@ -9,8 +9,6 @@
 
 Just a tiny wrapper around [broken-link-checker](https://github.com/stevenvachon/broken-link-checker) by [stevenvachon](https://github.com/stevenvachon) that allows you to check **local directories** for broken links.
 
-**This module is still under heavy development.**
-
 ## Installation
 
 With Node.js (version 6 or higher) installed, run
