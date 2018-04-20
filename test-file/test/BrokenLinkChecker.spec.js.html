@@ -44,6 +44,7 @@
 <div class="content" data-ice="content"><h1 data-ice="title">test/BrokenLinkChecker.spec.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import expect from &apos;unexpected&apos;;
 import { spy } from &apos;sinon&apos;;
+import request from &apos;supertest&apos;;
 import { createServer, Server } from &apos;http&apos;;
 import { join } from &apos;path&apos;;
 import getPort from &apos;get-port&apos;;
@@ -74,6 +75,19 @@ describe(&apos;BrokenLinkChecker&apos;, function() {
         .then(() =&gt; {
           expect(checker.server, &apos;to be a&apos;, Server);
         });
+    });
+
+    it(&apos;should serve on custom baseUrl if passed&apos;, async function() {
+      checker.options = { baseUrl: &apos;/test/&apos; };
+
+      const port = await getPort();
+      await checker.startServer(port);
+
+      const index = await request(checker.app).get(&apos;/&apos;);
+      expect(index.status, &apos;to equal&apos;, 404);
+
+      const customIndex = await request(checker.app).get(&apos;/test/BrokenLinkChecker.spec.js&apos;);
+      expect(customIndex.status, &apos;to equal&apos;, 200);
     });
 
     it(&apos;should fail without path&apos;, function() {
@@ -145,6 +159,13 @@ describe(&apos;BrokenLinkChecker&apos;, function() {
 
       return expect(checker.validateOptions(), &apos;when fulfilled&apos;, &apos;to be a&apos;, &apos;object&apos;);
     });
+
+    it(&apos;should add leading slash to base-url if needed&apos;, async function() {
+      const checker = new BrokenLinkChecker([&apos;dir&apos;, &apos;--base-url&apos;, &apos;asdf&apos;]);
+
+      await expect(checker.validateOptions(), &apos;when fulfilled&apos;, &apos;to be a&apos;, &apos;object&apos;);
+      expect(checker.baseUrl, &apos;to equal&apos;, &apos;/asdf&apos;);
+    });
   });
 
   /** @test {BrokenLinkChecker#getPathOrUrl} */
@@ -200,7 +221,7 @@ describe(&apos;BrokenLinkChecker&apos;, function() {
     });
 
     after(function() {
-      console.error.restore();
+      console.error.restore(); // eslint-disable-line no-console
     });
   });
 

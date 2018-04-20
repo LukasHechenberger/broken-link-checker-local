@@ -1,6 +1,6 @@
 {
   "name": "broken-link-checker-local",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Find broken links, missing images, etc in your HTML, even in local files",
   "main": "out/BrokenLinkChecker.js",
   "bin": {
@@ -52,9 +52,13 @@
     "mocha-circleci-reporter": "0.0.2",
     "nyc": "^10.1.2",
     "sinon": "^1.17.7",
+    "supertest": "^3.0.0",
     "unexpected": "^10.22.1"
   },
   "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": 2017
+    },
     "extends": "lsage",
     "env": {
       "node": true

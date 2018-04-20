@@ -13,163 +13,175 @@ window.esdocSearchIndex = [
   ],
   [
     "brokenlinkchecker src/brokenlinkchecker.js~brokenlinkchecker,brokenlinkchecker",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber9",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber10",
     "BrokenLinkChecker",
     "test"
   ],
   [
     "brokenlinkchecker#exit src/brokenlinkchecker.js~brokenlinkchecker#exit,brokenlinkchecker#exit",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber126",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber147",
     "BrokenLinkChecker #exit",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber151",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber172",
     "BrokenLinkChecker #exit should close server",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber143",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber164",
     "BrokenLinkChecker #exit should report error",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber138",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber159",
     "BrokenLinkChecker #exit should set exitCode",
     "test"
   ],
   [
     "brokenlinkchecker#getpathorurl src/brokenlinkchecker.js~brokenlinkchecker#getpathorurl,brokenlinkchecker#getpathorurl",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber107",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber128",
     "BrokenLinkChecker #getPathOrUrl",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber116",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber137",
     "BrokenLinkChecker #getPathOrUrl should set path if a path is passed",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber108",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber129",
     "BrokenLinkChecker #getPathOrUrl should set url if a url is passed",
     "test"
   ],
   [
     "brokenlinkchecker#launch src/brokenlinkchecker.js~brokenlinkchecker#launch,brokenlinkchecker#launch",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber164",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber185",
     "BrokenLinkChecker #launch",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber167",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber188",
     "BrokenLinkChecker #launch should fail with invalid directory",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber179",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber200",
     "BrokenLinkChecker #launch should fail with invalid url",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber173",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber194",
     "BrokenLinkChecker #launch should work with valid directory",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber185",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber206",
     "BrokenLinkChecker #launch should work with valid url",
     "test"
   ],
   [
     "brokenlinkchecker#runchecker src/brokenlinkchecker.js~brokenlinkchecker#runchecker,brokenlinkchecker#runchecker",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber42",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber56",
     "BrokenLinkChecker #runChecker",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber53",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber67",
     "BrokenLinkChecker #runChecker should fail with invalid url",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber58",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber72",
     "BrokenLinkChecker #runChecker should fail with path to invalid document",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber49",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber63",
     "BrokenLinkChecker #runChecker should fail without port and url",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber69",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber83",
     "BrokenLinkChecker #runChecker should work with path to valid document",
     "test"
   ],
   [
     "brokenlinkchecker#startserver src/brokenlinkchecker.js~brokenlinkchecker#startserver,brokenlinkchecker#startserver",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber11",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber12",
     "BrokenLinkChecker #startServer",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber19",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber20",
     "BrokenLinkChecker #startServer should create instance of express",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber27",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber28",
     "BrokenLinkChecker #startServer should create instance of http.Server",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber15",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber16",
     "BrokenLinkChecker #startServer should fail with invalid port",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber35",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber49",
     "BrokenLinkChecker #startServer should fail without path",
     "test"
   ],
   [
+    "",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber36",
+    "BrokenLinkChecker #startServer should serve on custom baseUrl if passed",
+    "test"
+  ],
+  [
     "brokenlinkchecker#validateoptions src/brokenlinkchecker.js~brokenlinkchecker#validateoptions,brokenlinkchecker#validateoptions",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber82",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber96",
     "BrokenLinkChecker #validateOptions",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber91",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber119",
+    "BrokenLinkChecker #validateOptions should add leading slash to base-url if needed",
+    "test"
+  ],
+  [
+    "",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber105",
     "BrokenLinkChecker #validateOptions should fail with multiple non-optional arguments ",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber83",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber97",
     "BrokenLinkChecker #validateOptions should fail without non-optional argument",
     "test"
   ],
   [
     "",
-    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber99",
+    "test-file/test/BrokenLinkChecker.spec.js.html#lineNumber113",
     "BrokenLinkChecker #validateOptions should work with single non-optional argument",
     "test"
   ],
@@ -519,6 +531,12 @@ window.esdocSearchIndex = [
     "src/brokenlinkchecker.js~brokenlinkchecker#app",
     "class/src/BrokenLinkChecker.js~BrokenLinkChecker.html#instance-member-app",
     "src/BrokenLinkChecker.js~BrokenLinkChecker#app",
+    "member"
+  ],
+  [
+    "src/brokenlinkchecker.js~brokenlinkchecker#baseurl",
+    "class/src/BrokenLinkChecker.js~BrokenLinkChecker.html#instance-get-baseUrl",
+    "src/BrokenLinkChecker.js~BrokenLinkChecker#baseUrl",
     "member"
   ],
   [

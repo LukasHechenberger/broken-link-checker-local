@@ -1,11 +1,11 @@
 {
   "coverage": "100%",
-  "expectCount": 16,
-  "actualCount": 16,
+  "expectCount": 17,
+  "actualCount": 17,
   "files": {
     "src/BrokenLinkChecker.js": {
-      "expectCount": 15,
-      "actualCount": 15,
+      "expectCount": 16,
+      "actualCount": 16,
       "undocumentLines": []
     },
     "src/cliOptions.js": {

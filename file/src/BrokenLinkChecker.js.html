@@ -42,7 +42,9 @@
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/BrokenLinkChecker.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import { spawn } from &apos;child_process&apos;;
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/* eslint-disable no-console */
+
+import { spawn } from &apos;child_process&apos;;
 import { join } from &apos;path&apos;;
 import { parse } from &apos;url&apos;;
 import yargs from &apos;yargs&apos;;
@@ -95,6 +97,14 @@ export default class BrokenLinkChecker {
   }
 
   /**
+   * The base url to use when serving files.
+   * @type {String}
+   */
+  get baseUrl() {
+    return this.options ? this.options.baseUrl : &apos;/&apos;;
+  }
+
+  /**
    * Starts a server serving {@link BrokenLinkChecker#path} on the speficied port.
    * @param {Number} port The port to server on.
    * @return {Promise&lt;Number, Error&gt;} Resolved with the port used, rejected with an error if
@@ -107,13 +117,16 @@ export default class BrokenLinkChecker {
       }
 
       console.log(colors.white(&apos;Starting server for path:&apos;), colors.yellow(this.path));
+      if (this.baseUrl !== &apos;/&apos;) {
+        console.log(colors.gray(`Using base url &apos;${this.options.baseUrl}&apos;`));
+      }
       /**
        * The instance of {@link express.Application} used.
        * @type {express.Application}
        */
       this.app = express();
 
-      this.app.use(&apos;/&apos;, express.static(this.path));
+      this.app.use(this.baseUrl, express.static(this.path));
 
       /**
        * The server used.
@@ -137,7 +150,7 @@ export default class BrokenLinkChecker {
       } else {
         let args = [
           port ?
-            `http://localhost:${port}` :
+            `http://localhost:${port}${this.baseUrl}` :
             this.url,
           &apos;--colors&apos;,
         ];
@@ -175,6 +188,12 @@ export default class BrokenLinkChecker {
           reject(err || new Error(msg));
         })
         .argv;
+
+      // Add leading &apos;/&apos; to baseUrl if needed
+      if (this.options.baseUrl[0] !== &apos;/&apos;) {
+        console.error(&apos;Adding slash&apos;);
+        this.options.baseUrl = `/${this.options.baseUrl}`;
+      }
 
       resolve(this.options);
     });
