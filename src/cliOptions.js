@@ -66,6 +66,12 @@ const CliOptions = {
     type: 'boolean',
     default: false,
   },
+  'base-url': {
+    desc: 'Serve files using alternative base url.',
+    alias: 'b',
+    type: 'string',
+    default: '/',
+  },
   'user-agent': {
     desc: 'The user agent to use for link checks.',
     type: 'string',
