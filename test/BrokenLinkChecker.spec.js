@@ -1,8 +1,8 @@
+import { createServer, Server } from 'http';
+import { join } from 'path';
 import expect from 'unexpected';
 import { spy } from 'sinon';
 import request from 'supertest';
-import { createServer, Server } from 'http';
-import { join } from 'path';
 import getPort from 'get-port';
 import BrokenLinkChecker from '../src/BrokenLinkChecker';
 

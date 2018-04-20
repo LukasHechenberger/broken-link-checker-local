@@ -7,7 +7,6 @@ import yargs from 'yargs';
 import express from 'express';
 import getPort from 'get-port';
 import colors from 'chalk';
-
 import pkg from '../package.json';
 import cliOptions from './cliOptions';
 
@@ -18,7 +17,7 @@ export default class BrokenLinkChecker {
 
   /**
    * Creates a new BrokenLinkChecker with the specified options.
-   * @param {String[]} argv The arguments to handle.
+   * @param {Array<string>} argv The arguments to handle.
    */
   constructor(argv = []) {
     /**
@@ -54,7 +53,7 @@ export default class BrokenLinkChecker {
 
   /**
    * The base url to use when serving files.
-   * @type {String}
+   * @type {string}
    */
   get baseUrl() {
     return this.options ? this.options.baseUrl : '/';
@@ -62,8 +61,8 @@ export default class BrokenLinkChecker {
 
   /**
    * Starts a server serving {@link BrokenLinkChecker#path} on the speficied port.
-   * @param {Number} port The port to server on.
-   * @return {Promise<Number, Error>} Resolved with the port used, rejected with an error if
+   * @param {number} port The port to server on.
+   * @return {Promise<number, Error>} Resolved with the port used, rejected with an error if
    * listening on the port failed.
    */
   startServer(port) {
@@ -96,8 +95,8 @@ export default class BrokenLinkChecker {
 
   /**
    * Runs `blc` on the given port or {@link BrokenLinkChecker#url}.
-   * @param {Number} [port] The port to check
-   * @return {Promise<Number>} Resolved with `blc`'s exit code.
+   * @param {number} [port] The port to check.
+   * @return {Promise<number>} Resolved with `blc`'s exit code.
    */
   runChecker(port) {
     return new Promise((resolve, reject) => {
@@ -173,9 +172,9 @@ export default class BrokenLinkChecker {
 
   /**
    * Exits BrokenLinkChecker with the specified exit code and (optionally) an error that occurred.
-   * @param {Number} code The code to exit with.
+   * @param {number} code The code to exit with.
    * @param {Error} err The error to report.
-   * @return {Number} code The code to exit with.
+   * @return {number} Code The code to exit with.
    */
   exit(code, err) {
     if (err) {
@@ -192,7 +191,7 @@ export default class BrokenLinkChecker {
   }
 
   /**
-   * Launches the CLI
+   * Launches the CLI.
    */
   launch() {
     return this.validateOptions()

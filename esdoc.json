@@ -1,13 +1,22 @@
 {
-  "title": "broken-link-checker-local",
   "source": "./src",
   "destination": "./docs/api",
-  "access": ["public", "package", "private"],
-  "test": {
-    "type": "mocha",
-    "source": "./test"
-  },
-  "manual": {
-    "changelog": ["./CHANGELOG.md"]
-  }
+  "plugins": [
+    {
+      "name": "esdoc-standard-plugin",
+      "option": {
+        "brand": {
+          "title": "broken-link-checker-local"
+        },
+        "access": ["public", "package", "private"],
+        "test": {
+          "type": "mocha",
+          "source": "./test"
+        },
+        "manual": {
+          "files": ["./CHANGELOG.md"]
+        }
+      }
+    }
+  ]
 }
