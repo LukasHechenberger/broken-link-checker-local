@@ -42,7 +42,7 @@
     "@ls-age/bump-version": "^0.1.4",
     "@ls-age/esdoc-coverage": "^0.1.6",
     "babel-cli": "^6.18.0",
-    "babel-plugin-istanbul": "^4.1.6",
+    "babel-plugin-istanbul": "^5.1.1",
     "babel-preset-node6": "^11.0.0",
     "codecov": "^3.0.0",
     "esdoc": "^1.0.4",
