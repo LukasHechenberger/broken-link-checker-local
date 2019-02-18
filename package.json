@@ -49,7 +49,7 @@
     "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^4.19.1",
     "eslint-config-lsage": "^0.3.0",
-    "mocha": "^5.1.1",
+    "mocha": "^6.0.0",
     "mocha-circleci-reporter": "0.0.2",
     "nyc": "^11.7.1",
     "sinon": "^4.5.0",
