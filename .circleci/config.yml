@@ -10,7 +10,12 @@ jobs:
             - v1-npm-deps-{{ checksum "package-lock.json" }}
       - run:
           name: Installing npm dependencies
-          command: npm install
+          command: npm ci
+      - save_cache:
+          key: v1-npm-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+            - node_modules
       - run:
           name: Setting up deployment environment
           command: |
@@ -19,27 +24,6 @@ jobs:
 
             echo "Logging in to npm"
             echo "$NPM_TOKEN" > ~/.npmrc
-      - run:
-          name: Handling package-lock changes
-          command: |
-            if git diff --exit-code package-lock.json; then
-              echo "package-lock did not change"
-            else
-              if [[ $CIRCLE_BRANCH = *"greenkeeper/"* ]]; then
-                echo "Committing package-lock changes"
-                git add package-lock.json
-                git commit -m 'chore(package): Update lockfile [ci skip]';
-              else
-                echo "Resetting package-lock changes"
-                git checkout -- package-lock.json
-              fi
-            fi
-
-            echo "Done"
-      - save_cache:
-          key: v1-npm-deps-{{ checksum "package-lock.json" }}
-          paths:
-            - node_modules
 
       # Code Quality checks
       # TODO: Lint commit message
@@ -93,9 +77,6 @@ jobs:
 
       # Deployment
       - add_ssh_keys
-      - deploy:
-          name: Updating lockfile
-          command: git push origin $CIRCLE_BRANCH
       - deploy:
           name: Deploy changes
           command: |
