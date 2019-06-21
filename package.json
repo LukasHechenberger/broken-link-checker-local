@@ -16,7 +16,7 @@
     "docs:coverage": "esdoc-coverage -c esdoc.json",
     "lint": "eslint src test",
     "prepublishOnly": "npm run compile && npm run docs",
-    "test": "node_modules/.bin/mocha --recursive --require babel-register \"./test/**/*.spec.js\" --exit",
+    "test": "node_modules/.bin/mocha --recursive --require @babel/register \"./test/**/*.spec.js\" --exit",
     "test:watch": "npm test -- --watch --reporter min",
     "test:coverage": "NODE_ENV=test node_modules/.bin/nyc --reporter=html npm test",
     "test:docs": "node out/bin.js docs/api --exclude https://circleci.com/gh/LukasHechenberger/broken-link-checker-local"
@@ -36,38 +36,47 @@
     "chalk": "^2.4.0",
     "express": "^4.14.0",
     "get-port": "^3.2.0",
-    "yargs": "^11.0.0"
+    "yargs": "^11.1.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/register": "^7.4.4",
     "@ls-age/bump-version": "^0.2.0",
     "@ls-age/esdoc-coverage": "^0.1.6",
-    "babel-cli": "^6.18.0",
-    "babel-plugin-istanbul": "^4.1.6",
-    "babel-preset-node6": "^11.0.0",
+    "@ls-age/eslint-config": "^0.9.0",
+    "babel-plugin-istanbul": "^5.1.4",
     "codecov": "^3.5.0",
     "esdoc": "^1.1.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^4.19.1",
-    "eslint-config-lsage": "^0.3.0",
-    "mocha": "^5.1.1",
+    "eslint": "^5.16.0",
+    "mocha": "^6.1.4",
     "mocha-circleci-reporter": "0.0.3",
-    "nyc": "^11.7.1",
-    "sinon": "^4.5.0",
-    "supertest": "^3.0.0",
-    "unexpected": "^10.22.1"
+    "nyc": "^14.1.1",
+    "sinon": "^7.3.2",
+    "supertest": "^4.0.2",
+    "unexpected": "^11.6.1"
   },
   "eslintConfig": {
     "parserOptions": {
       "ecmaVersion": 2017
     },
-    "extends": "lsage",
-    "env": {
-      "node": true
+    "extends": "@ls-age",
+    "rules": {
+      "compat/compat": "off"
     }
   },
   "babel": {
     "presets": [
-      "node6"
+      [
+        "@babel/env",
+        {
+          "targets": {
+            "node": 8
+          }
+        }
+      ]
     ],
     "env": {
       "test": {
@@ -83,7 +92,7 @@
       "src/**/*.js"
     ],
     "require": [
-      "babel-register"
+      "@babel/register"
     ],
     "sourceMap": false,
     "instrument": false,
