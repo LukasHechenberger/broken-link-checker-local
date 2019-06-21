@@ -14,7 +14,7 @@ describe('BrokenLinkChecker', function() {
     checker.path = __dirname;
 
     it('should fail with invalid port', function() {
-      return expect(checker.startServer(80), 'to be rejected with', /^listen/);
+      return expect(checker.startServer(-13), 'to be rejected with', /^Port should be/);
     });
 
     it('should create instance of express', function() {
