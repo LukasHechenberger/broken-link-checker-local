@@ -39,9 +39,9 @@
     "yargs": "^11.1.0"
   },
   "devDependencies": {
-    "@babel/cli": "7.12.13",
-    "@babel/core": "7.12.13",
-    "@babel/preset-env": "7.12.13",
+    "@babel/cli": "7.12.16",
+    "@babel/core": "7.12.16",
+    "@babel/preset-env": "7.12.16",
     "@babel/register": "7.12.13",
     "@ls-age/bump-version": "0.2.1",
     "@ls-age/esdoc-coverage": "0.1.6",
