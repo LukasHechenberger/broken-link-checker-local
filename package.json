@@ -50,7 +50,7 @@
     "codecov": "3.8.1",
     "esdoc": "1.1.0",
     "esdoc-standard-plugin": "1.0.0",
-    "eslint": "5.16.0",
+    "eslint": "7.19.0",
     "mocha": "6.1.4",
     "mocha-circleci-reporter": "0.0.3",
     "nyc": "14.1.1",
