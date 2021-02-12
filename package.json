@@ -54,7 +54,7 @@
     "mocha": "8.3.0",
     "mocha-circleci-reporter": "0.0.3",
     "nyc": "15.1.0",
-    "sinon": "7.3.2",
+    "sinon": "9.2.4",
     "supertest": "4.0.2",
     "unexpected": "11.6.1"
   },
