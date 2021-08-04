@@ -11,7 +11,7 @@ Just a tiny wrapper around [broken-link-checker](https://github.com/stevenvachon
 
 ## Installation
 
-With Node.js (version 6 or higher) installed, run
+With Node.js (version 10 or higher) installed, run
 
 ```npm install -g broken-link-checker-local```
 
