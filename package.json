@@ -41,7 +41,7 @@
   "devDependencies": {
     "@babel/cli": "7.16.0",
     "@babel/core": "7.16.0",
-    "@babel/preset-env": "7.16.0",
+    "@babel/preset-env": "7.16.4",
     "@babel/register": "7.16.0",
     "@ls-age/bump-version": "0.2.1",
     "@ls-age/esdoc-coverage": "0.1.6",
