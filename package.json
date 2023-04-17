@@ -56,7 +56,7 @@
     "nyc": "15.1.0",
     "sinon": "15.0.3",
     "supertest": "6.3.3",
-    "unexpected": "12.0.4"
+    "unexpected": "13.1.0"
   },
   "eslintConfig": {
     "parserOptions": {
