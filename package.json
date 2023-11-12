@@ -36,7 +36,7 @@
     "chalk": "^2.4.0",
     "express": "^4.14.0",
     "get-port": "^3.2.0",
-    "yargs": "^11.1.0"
+    "yargs": "^17.0.0"
   },
   "devDependencies": {
     "@babel/cli": "7.21.0",
